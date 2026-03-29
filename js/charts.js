@@ -61,7 +61,7 @@ const Charts = (() => {
     setEmpty('investment-chart', 'investment-chart-empty', isEmpty);
     if (isEmpty) { if (investmentChart) { investmentChart.destroy(); investmentChart = null; } return; }
 
-    const barColors = labels.map(() => 'rgba(52, 199, 89, 0.75)');
+    const barColors = labels.map(() => 'rgba(96, 165, 250, 0.75)');
 
     if (investmentChart) {
       investmentChart.data.labels = labels;
@@ -105,18 +105,40 @@ const Charts = (() => {
       trendChart.data.labels = labels;
       trendChart.data.datasets[0].data = expenseData;
       trendChart.data.datasets[1].data = investmentData;
-      trendChart.update();
+      trendChart.update('active');
       return;
     }
 
     const ctx = document.getElementById('trend-chart').getContext('2d');
     trendChart = new Chart(ctx, {
-      type: 'bar',
+      type: 'line',
       data: {
         labels,
         datasets: [
-          { label: 'Expenses', data: expenseData, backgroundColor: 'rgba(255, 107, 107, 0.8)', borderRadius: 4, borderSkipped: false, stack: 'total' },
-          { label: 'Investments', data: investmentData, backgroundColor: 'rgba(52, 199, 89, 0.8)', borderRadius: 4, borderSkipped: false, stack: 'total' }
+          {
+            label: 'Expenses',
+            data: expenseData,
+            borderColor: '#F87171',
+            backgroundColor: 'rgba(248, 113, 113, 0.08)',
+            fill: true,
+            tension: 0.4,
+            pointRadius: 4,
+            pointBackgroundColor: '#F87171',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+          },
+          {
+            label: 'Investments',
+            data: investmentData,
+            borderColor: '#60A5FA',
+            backgroundColor: 'rgba(96, 165, 250, 0.08)',
+            fill: true,
+            tension: 0.4,
+            pointRadius: 4,
+            pointBackgroundColor: '#60A5FA',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+          }
         ]
       },
       options: {
@@ -125,15 +147,11 @@ const Charts = (() => {
         plugins: {
           ...CHART_DEFAULTS.plugins,
           legend: { ...CHART_DEFAULTS.plugins.legend, position: 'bottom' },
-          tooltip: { callbacks: { label: (ctx) => ` ${ctx.dataset.label}: ${fmt(ctx.raw)}` } }
+          tooltip: { mode: 'index', intersect: false, callbacks: { label: (ctx) => ` ${ctx.dataset.label}: ${fmt(ctx.raw)}` } }
         },
         scales: {
-          x: { stacked: true, grid: { display: false }, ticks: { color: '#8E8E93', font: { size: 11 } } },
-          y: {
-            stacked: true,
-            grid: { color: '#F0F0F5' },
-            ticks: { callback: (v) => fmt(v), color: '#8E8E93', font: { size: 11 } }
-          }
+          x: { grid: { display: false }, ticks: { color: '#8E8E93', font: { size: 11 } } },
+          y: { grid: { color: '#F0F0F5' }, ticks: { callback: (v) => fmt(v), color: '#8E8E93', font: { size: 11 } } }
         }
       }
     });
