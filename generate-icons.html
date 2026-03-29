@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Generate Icons</title>
+  <style>
+    body { font-family: -apple-system, sans-serif; padding: 32px; background: #f5f5f7; }
+    h2 { margin-bottom: 16px; }
+    .icons { display: flex; gap: 24px; align-items: flex-end; margin-bottom: 24px; flex-wrap: wrap; }
+    canvas { border-radius: 22%; box-shadow: 0 2px 12px rgba(0,0,0,0.15); display: block; }
+    button { background: #4F46E5; color: white; border: none; padding: 14px 28px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; }
+    p { color: #666; margin-top: 16px; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <h2>Budget App — Icon Generator</h2>
+  <p>Click the button to generate and download all 3 icon files into the <code>icons/</code> folder.</p>
+  <div class="icons" id="previews"></div>
+  <button onclick="generateAll()">Download All Icons</button>
+  <p id="status"></p>
+
+  <script>
+    function drawIcon(size) {
+      const canvas = document.createElement('canvas');
+      canvas.width = canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      const r = size * 0.22;
+
+      // Rounded square background
+      ctx.beginPath();
+      ctx.moveTo(r, 0);
+      ctx.lineTo(size - r, 0);
+      ctx.quadraticCurveTo(size, 0, size, r);
+      ctx.lineTo(size, size - r);
+      ctx.quadraticCurveTo(size, size, size - r, size);
+      ctx.lineTo(r, size);
+      ctx.quadraticCurveTo(0, size, 0, size - r);
+      ctx.lineTo(0, r);
+      ctx.quadraticCurveTo(0, 0, r, 0);
+      ctx.closePath();
+
+      const grad = ctx.createLinearGradient(0, 0, size, size);
+      grad.addColorStop(0, '#6366F1');
+      grad.addColorStop(1, '#4F46E5');
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      // Euro symbol
+      ctx.fillStyle = 'rgba(255,255,255,0.95)';
+      ctx.font = `${Math.round(size * 0.52)}px -apple-system, "SF Pro Display", Helvetica, Arial, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('€', size / 2 + size * 0.02, size / 2 + size * 0.02);
+
+      return canvas;
+    }
+
+    function generateAll() {
+      const sizes = [
+        { size: 180, name: 'apple-touch-icon.png' },
+        { size: 192, name: 'icon-192.png' },
+        { size: 512, name: 'icon-512.png' }
+      ];
+
+      sizes.forEach(({ size, name }) => {
+        const canvas = drawIcon(size);
+        canvas.toBlob(blob => {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = name;
+          a.click();
+          URL.revokeObjectURL(url);
+        }, 'image/png');
+      });
+
+      document.getElementById('status').textContent =
+        '✓ 3 files downloaded. Move them into the icons/ folder, then you can close this page.';
+    }
+
+    // Show previews on load
+    window.onload = () => {
+      const container = document.getElementById('previews');
+      [48, 96, 192].forEach((preview, i) => {
+        const actual = [180, 192, 512][i];
+        const wrap = document.createElement('div');
+        wrap.style.textAlign = 'center';
+        const c = drawIcon(preview);
+        const label = document.createElement('div');
+        label.textContent = ['apple-touch-icon', 'icon-192', 'icon-512'][i];
+        label.style.cssText = 'font-size:11px;color:#888;margin-top:6px;';
+        wrap.appendChild(c);
+        wrap.appendChild(label);
+        container.appendChild(wrap);
+      });
+    };
+  </script>
+</body>
+</html>

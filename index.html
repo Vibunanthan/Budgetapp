@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Budget">
+  <meta name="theme-color" content="#4F46E5">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+  <title>Budget</title>
+</head>
+<body>
+
+  <!-- ── Main content ──────────────────────────────────────────────────────── -->
+  <main id="main">
+
+    <!-- Add view -->
+    <section id="view-add" class="view">
+      <div class="view-header">
+        <h1>New Entry</h1>
+      </div>
+
+      <!-- Type toggle -->
+      <div class="type-toggle">
+        <button class="toggle-btn active" data-type="expense">Expense</button>
+        <button class="toggle-btn" data-type="investment">Investment</button>
+      </div>
+
+      <form id="entry-form" autocomplete="off">
+        <!-- Amount -->
+        <div class="amount-field">
+          <span class="currency-symbol">€</span>
+          <input type="number" id="amount-input" placeholder="0.00" step="0.01" min="0.01"
+                 inputmode="decimal" required>
+        </div>
+
+        <!-- Expense fields -->
+        <div id="expense-fields">
+          <div class="field-group">
+            <label>Category</label>
+            <div class="category-chips" id="category-chips"></div>
+          </div>
+          <div class="field-group">
+            <label>Description</label>
+            <input type="text" id="expense-description" placeholder="What did you spend on?">
+          </div>
+        </div>
+
+        <!-- Investment fields -->
+        <div id="investment-fields" style="display:none">
+          <div class="field-group">
+            <label>Investment</label>
+            <input type="text" id="investment-name" placeholder="e.g. MSCI World ETF">
+          </div>
+          <div class="field-group">
+            <label>Note</label>
+            <input type="text" id="investment-note" placeholder="Optional note">
+          </div>
+        </div>
+
+        <!-- Date -->
+        <div class="field-group">
+          <label>Date</label>
+          <input type="date" id="entry-date">
+        </div>
+
+        <!-- Actions -->
+        <div class="form-actions">
+          <button type="submit" id="submit-btn" class="btn-primary">Add Expense</button>
+          <button type="button" id="cancel-btn" class="btn-secondary" style="display:none">Cancel</button>
+        </div>
+      </form>
+
+      <!-- Recent entries -->
+      <div class="recent-section">
+        <div class="section-label">Recent</div>
+        <div id="recent-list"></div>
+      </div>
+    </section>
+
+    <!-- List view -->
+    <section id="view-list" class="view">
+      <div class="view-header">
+        <h1>Entries</h1>
+      </div>
+
+      <div class="filter-bar">
+        <div class="filter-type-pills">
+          <button class="filter-pill active" data-filter-type="all">All</button>
+          <button class="filter-pill" data-filter-type="expense">Expenses</button>
+          <button class="filter-pill" data-filter-type="investment">Investments</button>
+        </div>
+        <div class="filter-dates">
+          <input type="date" id="filter-start" placeholder="From">
+          <span class="date-sep">–</span>
+          <input type="date" id="filter-end" placeholder="To">
+          <button id="filter-clear-btn" class="btn-ghost">Clear</button>
+        </div>
+      </div>
+
+      <div id="entry-list"></div>
+      <div id="list-total" class="list-total" style="display:none"></div>
+      <div id="list-empty" class="empty-state" style="display:none">No entries found</div>
+    </section>
+
+    <!-- Analysis view -->
+    <section id="view-analysis" class="view">
+      <div class="view-header">
+        <h1>Analysis</h1>
+        <div class="period-selector">
+          <button class="period-btn" data-period="week">Week</button>
+          <button class="period-btn active" data-period="month">Month</button>
+          <button class="period-btn" data-period="year">Year</button>
+        </div>
+      </div>
+
+      <!-- Total outflow stat -->
+      <div class="stat-card total-card">
+        <div class="stat-label">Total Outflow</div>
+        <div class="stat-value" id="total-outflow">€0,00</div>
+        <div class="stat-sub" id="total-period-label">This month</div>
+      </div>
+
+      <!-- Charts grid -->
+      <div class="charts-grid">
+        <div>
+          <div class="section-header">
+            <span>Expenses</span>
+            <span id="expense-total-label" class="section-total"></span>
+          </div>
+          <div class="chart-card">
+            <canvas id="category-chart"></canvas>
+            <div id="category-chart-empty" class="chart-empty" style="display:none">No expenses this period</div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-header">
+            <span>Investments</span>
+            <span id="investment-total-label" class="section-total"></span>
+          </div>
+          <div class="chart-card">
+            <canvas id="investment-chart"></canvas>
+            <div id="investment-chart-empty" class="chart-empty" style="display:none">No investments this period</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-header">
+        <span>Trend</span>
+      </div>
+      <div class="chart-card">
+        <canvas id="trend-chart"></canvas>
+        <div id="trend-chart-empty" class="chart-empty" style="display:none">No data this period</div>
+      </div>
+    </section>
+
+    <!-- Settings view -->
+    <section id="view-settings" class="view">
+      <div class="view-header">
+        <h1>Settings</h1>
+      </div>
+
+      <!-- iOS install tip -->
+      <div class="ios-install-tip" id="ios-install-tip" style="display:none">
+        <div class="tip-text">
+          To install: tap <strong>Share</strong> then <strong>Add to Home Screen</strong>
+        </div>
+        <button id="dismiss-install-tip" class="btn-ghost">Dismiss</button>
+      </div>
+
+      <div class="settings-group">
+        <div class="settings-label">Data</div>
+        <button id="export-btn" class="settings-item">
+          <span>Export to CSV</span>
+          <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <button id="import-btn" class="settings-item">
+          <span>Import from CSV</span>
+          <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <input type="file" id="csv-file-input" accept=".csv" style="display:none">
+      </div>
+
+      <div class="settings-group">
+        <div class="settings-label">Danger Zone</div>
+        <button id="clear-btn" class="settings-item danger">Clear All Data</button>
+      </div>
+
+      <p class="app-info">Budget v1.0 · Data stored locally on this device</p>
+    </section>
+
+  </main>
+
+  <!-- ── Tab bar ───────────────────────────────────────────────────────────── -->
+  <nav id="tab-bar">
+    <button class="tab-btn active" data-tab="add">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+      <span>Add</span>
+    </button>
+    <button class="tab-btn" data-tab="list">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="3" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="3" cy="18" r="1" fill="currentColor" stroke="none"/></svg>
+      <span>List</span>
+    </button>
+    <button class="tab-btn" data-tab="analysis">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      <span>Analysis</span>
+    </button>
+    <button class="tab-btn" data-tab="settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <span>Settings</span>
+    </button>
+  </nav>
+
+  <!-- Toast -->
+  <div id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
