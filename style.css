@@ -10,8 +10,12 @@
   --muted:        #8E8E93;
   --border:       #E5E5EA;
   --danger:       #FF3B30;
-  --exp-color:    #FF6B6B;
-  --inv-color:    #34C759;
+  --exp-color:    #F87171;
+  --exp-pastel:   #FEE2E2;
+  --exp-text:     #C0392B;
+  --inv-color:    #60A5FA;
+  --inv-pastel:   #DBEAFE;
+  --inv-text:     #1D4ED8;
   --radius-sm:    10px;
   --radius:       14px;
   --radius-lg:    22px;
@@ -129,6 +133,14 @@ html, body {
   color: var(--text);
   box-shadow: 0 1px 6px rgba(0,0,0,0.12);
 }
+.toggle-btn.active[data-type="expense"] {
+  color: var(--exp-text);
+  box-shadow: 0 1px 6px rgba(248, 113, 113, 0.25);
+}
+.toggle-btn.active[data-type="investment"] {
+  color: var(--inv-text);
+  box-shadow: 0 1px 6px rgba(96, 165, 250, 0.25);
+}
 
 /* ── Amount input ──────────────────────────────────────────────────────────── */
 .amount-field {
@@ -245,6 +257,8 @@ html, body {
   letter-spacing: 0.1px;
 }
 .btn-primary:active { opacity: 0.82; }
+.btn-primary.btn-expense    { background: var(--exp-color); }
+.btn-primary.btn-investment { background: var(--inv-color); }
 .btn-secondary {
   width: 100%;
   padding: 15px;
@@ -385,7 +399,8 @@ html, body {
   font-weight: 600;
   white-space: nowrap;
 }
-.entry-amount.investment { color: var(--inv-color); }
+.entry-amount.expense    { color: var(--exp-text); }
+.entry-amount.investment { color: var(--inv-text); }
 .entry-actions { display: flex; gap: 2px; }
 .icon-btn {
   border: none;
@@ -491,6 +506,10 @@ html, body {
   font-weight: 500;
   color: var(--muted);
 }
+.expense-header   { color: var(--exp-text); }
+.investment-header { color: var(--inv-text); }
+.expense-header .section-total   { color: var(--exp-color); }
+.investment-header .section-total { color: var(--inv-color); }
 
 .charts-grid { display: flex; flex-direction: column; gap: 0; }
 

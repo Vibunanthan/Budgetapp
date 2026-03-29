@@ -1,5 +1,6 @@
 const CATEGORIES = [
   { id: 'food',          label: 'Food & Dining',    color: '#FF6B6B' },
+  { id: 'groceries',     label: 'Groceries',        color: '#FB923C' },
   { id: 'transport',     label: 'Transport',        color: '#FFA94D' },
   { id: 'housing',       label: 'Housing',          color: '#51CF66' },
   { id: 'utilities',     label: 'Utilities',        color: '#339AF0' },
@@ -49,6 +50,9 @@ const App = (() => {
       b.classList.toggle('active', b.dataset.type === type));
     $('expense-fields').style.display  = type === 'expense'    ? '' : 'none';
     $('investment-fields').style.display = type === 'investment' ? '' : 'none';
+    const btn = $('submit-btn');
+    btn.classList.toggle('btn-expense',    type === 'expense');
+    btn.classList.toggle('btn-investment', type === 'investment');
     updateSubmitLabel();
   }
 
@@ -179,7 +183,7 @@ const App = (() => {
 
   function renderCard(entry) {
     const cat = CATEGORIES.find(c => c.id === entry.category);
-    const color = entry.type === 'expense' ? (cat ? cat.color : '#ADB5BD') : '#34C759';
+    const color = entry.type === 'expense' ? (cat ? cat.color : '#ADB5BD') : '#60A5FA';
     const label = entry.type === 'expense' ? (cat ? cat.label : entry.category) : entry.category;
     const title = entry.description || label;
     const amtClass = entry.type === 'investment' ? 'investment' : 'expense';
