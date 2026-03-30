@@ -41,11 +41,13 @@
         <div id="expense-fields">
           <div class="field-group">
             <label>Category</label>
-            <div class="category-chips" id="category-chips"></div>
+            <div class="category-chips" id="category-chips" tabindex="0" role="listbox" aria-label="Select category"></div>
           </div>
-          <div class="field-group">
-            <label>Description</label>
-            <input type="text" id="expense-description" placeholder="What did you spend on?">
+          <div class="field-group optional-field" id="description-field">
+            <button type="button" class="optional-toggle" id="toggle-description">+ Add note</button>
+            <div class="optional-content">
+              <input type="text" id="expense-description" placeholder="What did you spend on?">
+            </div>
           </div>
         </div>
 
@@ -62,9 +64,11 @@
         </div>
 
         <!-- Date -->
-        <div class="field-group">
-          <label>Date</label>
-          <input type="date" id="entry-date">
+        <div class="field-group optional-field" id="date-field">
+          <button type="button" class="optional-toggle" id="toggle-date">Today <span class="change-link">· change</span></button>
+          <div class="optional-content">
+            <input type="date" id="entry-date">
+          </div>
         </div>
 
         <!-- Actions -->
