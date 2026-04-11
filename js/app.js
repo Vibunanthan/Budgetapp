@@ -39,8 +39,9 @@ const App = (() => {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     $('view-' + name).classList.add('active');
     document.querySelector(`.tab-btn[data-tab="${name}"]`).classList.add('active');
-    if (name === 'list')     loadList();
-    if (name === 'analysis') loadAnalysis();
+    if (name === 'list')      loadList();
+    if (name === 'analysis')  loadAnalysis();
+    if (name === 'stiffness') StiffnessChart.mount();
   }
 
   // ── Add / Edit form ─────────────────────────────────────────────────────────
