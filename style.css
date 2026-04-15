@@ -111,16 +111,16 @@ html, body {
   background: var(--border);
   border-radius: var(--radius-lg);
   padding: 3px;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
   gap: 2px;
 }
 .toggle-btn {
   flex: 1;
   border: none;
   background: transparent;
-  padding: 10px 16px;
+  padding: 7px 12px;
   border-radius: calc(var(--radius-lg) - 2px);
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 500;
   color: var(--muted);
   cursor: pointer;
@@ -209,8 +209,18 @@ html, body {
 /* ── Category chips ────────────────────────────────────────────────────────── */
 .category-chips {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow-x: auto;
   gap: 8px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 4px;
+  outline: none;
+}
+.category-chips::-webkit-scrollbar { display: none; }
+.category-chips.expanded {
+  flex-wrap: wrap;
+  overflow-x: visible;
 }
 .chip {
   border: 1.5px solid var(--border);
@@ -233,6 +243,52 @@ html, body {
   color: #fff;
 }
 .chip:not(.selected):active { background: var(--bg); }
+.chip.keyboard-focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ── Optional collapsible fields ───────────────────────────────────────────── */
+.optional-field .optional-content {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.2s ease, opacity 0.2s ease;
+}
+.optional-field.open .optional-content {
+  max-height: 80px;
+  opacity: 1;
+}
+.optional-toggle {
+  border: none;
+  background: transparent;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 6px 0;
+  font-family: inherit;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.change-link {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+/* ── Amount step-done state ───────────────────────────────────────────────── */
+.amount-field.step-done {
+  margin-bottom: 16px;
+  transition: margin-bottom 0.2s;
+}
+.amount-field.step-done #amount-input {
+  font-size: 32px;
+  transition: font-size 0.2s;
+}
+.amount-field.step-done .currency-symbol {
+  font-size: 24px;
+  transition: font-size 0.2s;
+}
 
 /* ── Form actions ──────────────────────────────────────────────────────────── */
 .form-actions {
@@ -625,6 +681,7 @@ html, body {
   .charts-grid .chart-card { flex: 1; margin-bottom: 0; }
 
   .category-chips { gap: 10px; }
+  .category-chips.expanded { gap: 10px; }
 
   .filter-dates input[type="date"] { font-size: 14px; }
 }

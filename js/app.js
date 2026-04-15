@@ -18,6 +18,8 @@ const App = (() => {
   let selectedCategory = null;
   let analysisPeriod = 'month';
   let listFilter = { type: 'all', start: '', end: '' };
+  let formStep = 'amount'; // 'amount' | 'category'
+  let focusedChipIndex = -1;
 
   // Helpers
   const $ = id => document.getElementById(id);
@@ -77,10 +79,63 @@ const App = (() => {
     });
   }
 
+  function setFormStep(step) {
+    formStep = step;
+    const amountField = document.querySelector('.amount-field');
+    const chipsContainer = $('category-chips');
+
+    if (step === 'amount') {
+      amountField.classList.remove('step-done');
+      chipsContainer.classList.remove('expanded');
+      clearChipFocus();
+      focusedChipIndex = -1;
+      $('amount-input').focus();
+    } else if (step === 'category') {
+      amountField.classList.add('step-done');
+      chipsContainer.classList.add('expanded');
+      focusedChipIndex = 0;
+      updateChipFocus();
+      chipsContainer.focus();
+      chipsContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }
+
+  function clearChipFocus() {
+    document.querySelectorAll('#category-chips .chip').forEach(c =>
+      c.classList.remove('keyboard-focus'));
+  }
+
+  function updateChipFocus() {
+    clearChipFocus();
+    const chips = document.querySelectorAll('#category-chips .chip');
+    if (focusedChipIndex >= 0 && focusedChipIndex < chips.length) {
+      chips[focusedChipIndex].classList.add('keyboard-focus');
+    }
+  }
+
   function selectCategory(id) {
     selectedCategory = id;
     document.querySelectorAll('#category-chips .chip').forEach(c =>
       c.classList.toggle('selected', c.dataset.id === id));
+
+    // Auto-submit on category tap (quick entry, not during edit)
+    if (editingId === null && $('amount-input').value) {
+      handleQuickSubmit();
+    }
+  }
+
+  async function handleQuickSubmit() {
+    const amountRaw = parseFloat($('amount-input').value);
+    if (!amountRaw || amountRaw <= 0) return;
+    const amount = Math.round(amountRaw * 100);
+    const date = $('entry-date').value || today();
+    const description = $('expense-description').value.trim();
+
+    const entry = { type: 'expense', amount, category: selectedCategory, date, description };
+    await DB.addEntry(entry);
+    showToast('Expense added');
+    resetForm();
+    loadRecentEntries();
   }
 
   function resetForm() {
@@ -91,6 +146,17 @@ const App = (() => {
     editingId = null;
     $('cancel-btn').style.display = 'none';
     updateSubmitLabel();
+    // Reset step state and collapse optional fields
+    formStep = 'amount';
+    focusedChipIndex = -1;
+    document.querySelector('.amount-field').classList.remove('step-done');
+    $('category-chips').classList.remove('expanded');
+    clearChipFocus();
+    $('description-field').classList.remove('open');
+    $('date-field').classList.remove('open');
+    $('toggle-date').innerHTML = 'Today <span class="change-link">· change</span>';
+    // Re-focus amount for next entry
+    $('amount-input').focus();
   }
 
   async function handleFormSubmit(e) {
@@ -131,12 +197,19 @@ const App = (() => {
     $('amount-input').value = (entry.amount / 100).toFixed(2);
     $('entry-date').value = entry.date;
     if (entry.type === 'expense') {
-      selectCategory(entry.category);
+      // Set category without triggering auto-submit (editingId is already set)
+      selectedCategory = entry.category;
+      document.querySelectorAll('#category-chips .chip').forEach(c =>
+        c.classList.toggle('selected', c.dataset.id === entry.category));
       $('expense-description').value = entry.description || '';
     } else {
       $('investment-name').value = entry.category;
       $('investment-note').value = entry.description || '';
     }
+    // Show all fields for editing
+    $('description-field').classList.add('open');
+    $('date-field').classList.add('open');
+    $('category-chips').classList.add('expanded');
     $('cancel-btn').style.display = '';
     updateSubmitLabel();
     showTab('add');
@@ -145,7 +218,7 @@ const App = (() => {
 
   async function loadRecentEntries() {
     const all = await DB.getAllEntries();
-    const recent = all.sort((a, b) => b.date.localeCompare(a.date) || b.createdAt - a.createdAt).slice(0, 5);
+    const recent = all.sort((a, b) => b.date.localeCompare(a.date) || b.createdAt - a.createdAt).slice(0, 3);
     const container = $('recent-list');
     container.innerHTML = recent.length ? recent.map(renderCard).join('') : '<p class="empty-recent">No entries yet</p>';
     attachCardListeners(container);
@@ -418,6 +491,76 @@ const App = (() => {
 
     // Form submit
     $('entry-form').addEventListener('submit', handleFormSubmit);
+
+    // Clicking amount field returns to amount step
+    $('amount-input').addEventListener('focus', () => {
+      if (formStep !== 'amount') {
+        formStep = 'amount';
+        document.querySelector('.amount-field').classList.remove('step-done');
+        $('category-chips').classList.remove('expanded');
+        clearChipFocus();
+        focusedChipIndex = -1;
+      }
+    });
+
+    // Keyboard: Amount input Enter → go to category step
+    $('amount-input').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const amountRaw = parseFloat($('amount-input').value);
+        if (!amountRaw || amountRaw <= 0) { showToast('Enter a valid amount'); return; }
+        if (entryType === 'expense') {
+          setFormStep('category');
+        } else {
+          $('investment-name').focus();
+        }
+      }
+    });
+
+    // Keyboard: Category chips navigation
+    $('category-chips').addEventListener('keydown', (e) => {
+      const chips = document.querySelectorAll('#category-chips .chip');
+      const count = chips.length;
+      if (!count) return;
+
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        focusedChipIndex = (focusedChipIndex + 1) % count;
+        updateChipFocus();
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        focusedChipIndex = (focusedChipIndex - 1 + count) % count;
+        updateChipFocus();
+      } else if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        if (focusedChipIndex >= 0 && focusedChipIndex < count) {
+          selectCategory(CATEGORIES[focusedChipIndex].id);
+        }
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        setFormStep('amount');
+      }
+    });
+
+    // Keyboard: Investment name Enter → submit or focus note
+    $('investment-name').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        $('entry-form').requestSubmit();
+      }
+    });
+
+    // Optional field toggles
+    $('toggle-description').addEventListener('click', () => {
+      $('description-field').classList.toggle('open');
+      if ($('description-field').classList.contains('open')) {
+        $('expense-description').focus();
+      }
+    });
+
+    $('toggle-date').addEventListener('click', () => {
+      $('date-field').classList.toggle('open');
+    });
 
     // Cancel edit
     $('cancel-btn').addEventListener('click', () => { resetForm(); });
